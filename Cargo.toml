@@ -3,6 +3,12 @@ name = "oryx"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "oryx"
+path = "src/main.rs"
 
 [dependencies]
+tokio = { version = "1", features = ["full"] }
+log = "0.4"
+env_logger = "0.8.4"
+anyhow = "1.0"
