@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: CronJob 
+metadata:
+  name: oryx-job
+spec:
+  schedule: "@daily"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: oryx 
+            image: charlesdalton/oryx:latest
+            env:
+            - name: ORYX_TELEGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: oryx-telegram-secret 
+                  key: ORYX_TELEGRAM_TOKEN
+            - name: INFURA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: infura-key
+                  key: INFURA_API_KEY

@@ -56,7 +56,7 @@ mod report_publisher {
 
         info!("Report: {:?}", report_for_telegram);
 
-        //telegram_client::send_message_to_committee(&report_for_telegram, &telegram_token).await?;
+        telegram_client::send_message_to_committee(&report_for_telegram, &telegram_token).await?;
 
         Ok(())
     }
