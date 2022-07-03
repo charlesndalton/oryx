@@ -1,6 +1,6 @@
 use std::env;
 use anyhow::{Result, Context};
-use bigdecimal::{BigDecimal, FromPrimitive};
+use bigdecimal::{BigDecimal, ToPrimitive, FromPrimitive};
 use std::str::FromStr;
 use derive_getters::{Getters};
 use derive_new::{new};
@@ -39,6 +39,7 @@ async fn main() -> Result<()> {
 
 mod report_publisher {
     use super::*;
+    use num_format::{Locale, ToFormattedString};
 
     pub async fn publish_report(report: StargateReport, telegram_token: String) -> Result<()> {
         let mut report_formatted = vec!(
@@ -48,8 +49,8 @@ mod report_publisher {
         for individual_strategy_report in report.individual_strategy_reports() {
             report_formatted.push(String::from("--------------"));
             report_formatted.push(format!("Asset – {}", &individual_strategy_report.asset_name())); 
-            report_formatted.push(format!("Yearn Strategy TVL: ${}", individual_strategy_report.strategy_tvl()));
-            report_formatted.push(format!("Total Pool Liquidity: ${}", individual_strategy_report.pool_liquidity()));
+            report_formatted.push(format!("Yearn Strategy TVL: ${}", individual_strategy_report.strategy_tvl().to_u128().unwrap().to_formatted_string(&Locale::en)));
+            report_formatted.push(format!("Total Pool Liquidity: ${}", individual_strategy_report.pool_liquidity().to_u128().unwrap().to_formatted_string(&Locale::en)));
         }
 
         let report_for_telegram = report_formatted.join("\n");
