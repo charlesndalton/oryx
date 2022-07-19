@@ -19,6 +19,8 @@ pub struct IndividualStrategyReport {
     asset_name: String,
     strategy_tvl: BigDecimal,
     pool_liquidity: BigDecimal,
+    pool_liabilities: BigDecimal,
+    current_ratio: BigDecimal,
 }
 
 #[tokio::main]
@@ -50,6 +52,8 @@ mod report_publisher {
             report_formatted.push(String::from("--------------"));
             report_formatted.push(format!("Asset – {}", &individual_strategy_report.asset_name())); 
             report_formatted.push(format!("Yearn Strategy TVL: ${}", individual_strategy_report.strategy_tvl().to_u128().unwrap().to_formatted_string(&Locale::en)));
+            report_formatted.push(format!("Pool Current Ratio: {}", individual_strategy_report.current_ratio().with_scale(2)));
+            report_formatted.push(format!("Total Pool Liabilities: ${}", individual_strategy_report.pool_liabilities().to_u128().unwrap().to_formatted_string(&Locale::en)));
             report_formatted.push(format!("Total Pool Liquidity: ${}", individual_strategy_report.pool_liquidity().to_u128().unwrap().to_formatted_string(&Locale::en)));
         }
 
@@ -57,7 +61,7 @@ mod report_publisher {
 
         info!("Report: {:?}", report_for_telegram);
 
-        telegram_client::send_message_to_committee(&report_for_telegram, &telegram_token).await?;
+        // telegram_client::send_message_to_committee(&report_for_telegram, &telegram_token).await?;
 
         Ok(())
     }
@@ -116,10 +120,20 @@ mod report_creator {
 
             info!("Liquidity: {}", total_liquidity);
 
+            let pool_token = blockchain_client::IERC20::new(liquidity_pool_address, Arc::clone(&eth_client));
+
+            let pool_liabilities = (pool_token.total_supply().await? / 10_i64.pow(decimals)).with_scale(0);
+
+            info!("Pool liabilities: {}", pool_liabilities);
+
+            let current_ratio = &total_liquidity / &pool_liabilities;
+
             individual_strategy_reports.push(IndividualStrategyReport::new(
                     symbol, 
                     total_position,
-                    total_liquidity
+                    total_liquidity,
+                    pool_liabilities,
+                    current_ratio
                 ));
         }
 
@@ -175,6 +189,12 @@ mod blockchain_client {
             let balance = self.instance.balance_of(address).call().await?;
 
             Ok(BigDecimal::from_u128(balance.as_u128()).unwrap())
+        }
+
+        pub async fn total_supply(&self) -> Result<BigDecimal> {
+            let total_supply = self.instance.total_supply().call().await?;
+
+            Ok(BigDecimal::from_u128(total_supply.as_u128()).unwrap())
         }
     }
 
