@@ -51,19 +51,24 @@ mod report_publisher {
         for individual_strategy_report in report.individual_strategy_reports() {
             report_formatted.push(String::from("--------------"));
             report_formatted.push(format!("Asset – {}", &individual_strategy_report.asset_name())); 
-            report_formatted.push(format!("Yearn Strategy TVL: ${}", individual_strategy_report.strategy_tvl().to_u128().unwrap().to_formatted_string(&Locale::en)));
+            report_formatted.push(format!("Yearn Strategy TVL: ${}", prettify(&individual_strategy_report.strategy_tvl())));
             report_formatted.push(format!("Pool Current Ratio: {}", individual_strategy_report.current_ratio().with_scale(2)));
-            report_formatted.push(format!("Total Pool Liabilities: ${}", individual_strategy_report.pool_liabilities().to_u128().unwrap().to_formatted_string(&Locale::en)));
-            report_formatted.push(format!("Total Pool Liquidity: ${}", individual_strategy_report.pool_liquidity().to_u128().unwrap().to_formatted_string(&Locale::en)));
+            report_formatted.push(format!("Total Pool Liabilities: ${}", prettify(&individual_strategy_report.pool_liabilities())));
+            report_formatted.push(format!("Total Pool Liquidity: ${}", prettify(&individual_strategy_report.pool_liabilities())));
         }
 
         let report_for_telegram = report_formatted.join("\n");
 
         info!("Report: {:?}", report_for_telegram);
 
-        // telegram_client::send_message_to_committee(&report_for_telegram, &telegram_token).await?;
+        telegram_client::send_message_to_committee(&report_for_telegram, &telegram_token).await?;
 
         Ok(())
+    }
+
+    fn prettify(num: &BigDecimal) -> String {
+        // unwrap is ok because we shouldn't have a number larger than 2^128
+        num.to_u128().unwrap().to_formatted_string(&Locale::en)
     }
 }
 
@@ -120,7 +125,7 @@ mod report_creator {
 
             info!("Liquidity: {}", total_liquidity);
 
-            let pool_token = blockchain_client::IERC20::new(liquidity_pool_address, Arc::clone(&eth_client));
+            let pool_token = IERC20::new(liquidity_pool_address, Arc::clone(&eth_client));
 
             let pool_liabilities = (pool_token.total_supply().await? / 10_i64.pow(decimals)).with_scale(0);
 
