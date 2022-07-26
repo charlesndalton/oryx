@@ -54,7 +54,7 @@ mod report_publisher {
             report_formatted.push(format!("Yearn Strategy TVL: ${}", prettify(&individual_strategy_report.strategy_tvl())));
             report_formatted.push(format!("Pool Current Ratio: {}", individual_strategy_report.current_ratio().with_scale(2)));
             report_formatted.push(format!("Total Pool Liabilities: ${}", prettify(&individual_strategy_report.pool_liabilities())));
-            report_formatted.push(format!("Total Pool Liquidity: ${}", prettify(&individual_strategy_report.pool_liabilities())));
+            report_formatted.push(format!("Total Pool Liquidity: ${}", prettify(&individual_strategy_report.pool_liquidity())));
         }
 
         let report_for_telegram = report_formatted.join("\n");
