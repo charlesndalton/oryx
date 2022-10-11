@@ -16,10 +16,10 @@ spec:
             - name: ORYX_TELEGRAM_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: oryx-telegram-secret 
+                  name: oryx-telegram-token-secret 
                   key: ORYX_TELEGRAM_TOKEN
             - name: INFURA_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: infura-key
+                  name: infura-api-key-secret
                   key: INFURA_API_KEY
